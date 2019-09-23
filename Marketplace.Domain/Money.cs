@@ -10,7 +10,7 @@ namespace Marketplace.Domain
     {
         private const string DefaultCurrency = "EUR";
         public static Money FromDecimal(decimal amount, string currency = DefaultCurrency) => new Money(amount, currency);
-        public static Money FromString(string amount,, string currency = DefaultCurrency) => new Money(decimal.Parse(amount), currency);
+        public static Money FromString(string amount, string currency = DefaultCurrency) => new Money(decimal.Parse(amount), currency);
         protected Money(decimal amount, string currencyCode = "EUR")
         {
             if (decimal.Round(amount, 2) != amount)
