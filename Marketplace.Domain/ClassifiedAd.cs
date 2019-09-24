@@ -4,39 +4,43 @@ namespace Marketplace.Domain
 {
     public class ClassifiedAd : Entity
     {
-        public ClassifiedAdId Id { get; }
+        public ClassifiedAdId Id { get; private set; }
         public ClassifiedAd(ClassifiedAdId id, UserId ownerId)
         {
-            Id = id;
-            OwnerId = ownerId;
-            State = ClassifiedAdState.Inactive;
-            EnsureValidState();
-
-            Raise(new Events.ClassifiedAdCreated { Id = id, OwnerId = ownerId });
+            Apply(new Events.ClassifiedAdCreated
+            {
+                Id = id,
+            OwnerId = ownerId,
+        });
         }
         public void SetTitle(ClassifiedAdTitle title)
         {
-            Title = title;
-            EnsureValidState();
-            Raise(new Events.ClassifiedAdTitleCreated { Id = Id, Title = title });
+            Apply(new Events.ClassifiedAdTitleCreated
+            {
+                Id = Id,
+                Title = title,
+            });
         }
         public void UpdateText(ClassifiedAdText text)
         {
-            Text = text;
-            EnsureValidState();
-            Raise(new Events.ClassifiedAdTextUpdated { Id = Id, AdText = text });
+            Apply(new Events.ClassifiedAdTextUpdated
+            {
+                Id = Id,
+                AdText = text
+            });
         }
         public void UpdatePrice(Price price)
         {
-            Price = price;
-            EnsureValidState();
-            Raise(new Events.ClassifiedAdPriceUpdated { Id = Id, Price = Price.Amount, CurrencyCode = Price.Currency.CurrencyCode });
+            Apply(new Events.ClassifiedAdPriceUpdated
+            {
+                Id = Id,
+                Price = price.Amount,
+                CurrencyCode = price.Currency.CurrencyCode
+            });
         }
         public void RequestToPublish()
         {
-            State = ClassifiedAdState.PendingReview;
-            EnsureValidState();
-            Raise(new Events.ClassifiedAdSentForReview { Id = Id });
+            Apply(new Events.ClassifiedAdSentForReview { Id = Id });
         }
         protected override void EnsureValidState()
         {
@@ -59,10 +63,29 @@ namespace Marketplace.Domain
 
         protected override void When(object @event)
         {
-            throw new System.NotImplementedException();
+            switch (@event)
+            {
+                case Events.ClassifiedAdCreated e:
+                    Id = new ClassifiedAdId(e.Id);
+                    OwnerId = new UserId(e.OwnerId);
+                    State = ClassifiedAdState.Inactive;
+                    break;
+                case Events.ClassifiedAdTextUpdated e:
+                    Text = ClassifiedAdText.FromString(e.AdText);
+                    break;
+                case Events.ClassifiedAdTitleCreated e:
+                    Title = ClassifiedAdTitle.FromString(e.Title);
+                    break;
+                case Events.ClassifiedAdPriceUpdated e:
+                    Price = new Price(e.Price, e.CurrencyCode);
+                    break;
+                case Events.ClassifiedAdSentForReview e:
+                    State = ClassifiedAdState.PendingReview;
+                    break;
+            }
         }
 
-        public UserId OwnerId { get; }
+        public UserId OwnerId { get; private set; }
         public ClassifiedAdTitle Title { get; private set; }
         public ClassifiedAdText Text { get; private set; }
         public Price Price { get; private set; }

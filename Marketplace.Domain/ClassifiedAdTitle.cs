@@ -1,14 +1,23 @@
 ﻿using Marketplace.Framework;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Marketplace.Domain
 {
     public class ClassifiedAdTitle : Value<ClassifiedAdTitle>
     {
-        public static ClassifiedAdTitle FromString(string title) => new ClassifiedAdTitle(title);
+        public static ClassifiedAdTitle FromString(string title)
+        {
+            CheckValidity(title);
+            return new ClassifiedAdTitle(title);
+        }
+
+        private static void CheckValidity(string value)
+        {
+            if (value.Length > 100)
+                throw new ArgumentOutOfRangeException("Title cannot be longer than 100 characters", nameof(value));
+        }
+
         public static ClassifiedAdTitle FromHTML(string htmlTitle)
         {
             var supportedTagsReplaced = htmlTitle
@@ -16,19 +25,18 @@ namespace Marketplace.Domain
             .Replace("</i>", "*")
             .Replace("<b>", "*")
             .Replace("</b>", "*");
-            return new ClassifiedAdTitle(Regex.Replace(supportedTagsReplaced, "<.*?>", string.Empty));
-        }
-        private readonly string _value;
 
-        private ClassifiedAdTitle(string value)
+            var value = Regex.Replace(supportedTagsReplaced, "<.*?>", string.Empty);
+            CheckValidity(value);
+
+            return new ClassifiedAdTitle(value);
+        }
+        public string Value { get; }
+
+        internal ClassifiedAdTitle(string value)
         {
-            if (value.Length > 100)
-            {
-                throw new ArgumentOutOfRangeException("Title cannot be longer that 100 characters", nameof(value));
-            }
-
-            _value = value;
+            Value = value;
         }
-        public static implicit operator string(ClassifiedAdTitle self) => self._value;
+        public static implicit operator string(ClassifiedAdTitle self) => self.Value;
     }
 }
