@@ -11,17 +11,42 @@ namespace Marketplace.Api
     [Route("/ad")]
     public class ClassifiedAdsCommandsApi : Controller
     {
-        private readonly Func<IHandleCommand<V1.Create>> _createAdCommandHandlerFactory;
+        private readonly ClassifiedAdsApplicationService _applicationService;
 
-        public ClassifiedAdsCommandsApi(Func<IHandleCommand<V1.Create>> createAdCommandHandlerFactory)
+        public ClassifiedAdsCommandsApi(ClassifiedAdsApplicationService applicationService)
         {
-            _createAdCommandHandlerFactory = createAdCommandHandlerFactory;
+            _applicationService = applicationService;
         }
 
         [HttpPost]
-        public Task Post(Contracts.ClassifiedAds.V1.Create request)
+        public async Task<IActionResult> Post(Contracts.ClassifiedAds.V1.Create request)
         {
-            return _createAdCommandHandlerFactory().Handle(request);
+            await _applicationService.Handle(request);
+            return Ok();
+        }
+        [HttpPut("name")]
+        public async Task<IActionResult> Put(Contracts.ClassifiedAds.V1.SetTitle request)
+        {
+            await _applicationService.Handle(request);
+            return Ok();
+        }
+        [HttpPut("text")]
+        public async Task<IActionResult> Put(Contracts.ClassifiedAds.V1.UpdateText request)
+        {
+            await _applicationService.Handle(request);
+            return Ok();
+        }
+        [HttpPut("price")]
+        public async Task<IActionResult> Put(Contracts.ClassifiedAds.V1.UpdatePrice request)
+        {
+            await _applicationService.Handle(request);
+            return Ok();
+        }
+        [HttpPut("publish")]
+        public async Task<IActionResult> Put(Contracts.ClassifiedAds.V1.RequestToPublish request)
+        {
+            await _applicationService.Handle(request);
+            return Ok();
         }
     }
 }
