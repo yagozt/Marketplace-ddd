@@ -7,40 +7,29 @@ namespace Marketplace.Domain
         public ClassifiedAdId Id { get; private set; }
         public ClassifiedAd(ClassifiedAdId id, UserId ownerId)
         {
-            Apply(new Events.ClassifiedAdCreated
-            {
-                Id = id,
-            OwnerId = ownerId,
-        });
+            Id = id;
+            OwnerId = ownerId;
+            State = ClassifiedAdState.Inactive;
+            EnsureValidState();
         }
         public void SetTitle(ClassifiedAdTitle title)
         {
-            Apply(new Events.ClassifiedAdTitleCreated
-            {
-                Id = Id,
-                Title = title,
-            });
+            Title = title;
+            EnsureValidState();
         }
         public void UpdateText(ClassifiedAdText text)
         {
-            Apply(new Events.ClassifiedAdTextUpdated
-            {
-                Id = Id,
-                AdText = text
-            });
+            Text = text;
+            EnsureValidState();
         }
         public void UpdatePrice(Price price)
         {
-            Apply(new Events.ClassifiedAdPriceUpdated
-            {
-                Id = Id,
-                Price = price.Amount,
-                CurrencyCode = price.Currency.CurrencyCode
-            });
+            Price = price;
+            EnsureValidState();
         }
         public void RequestToPublish()
         {
-            Apply(new Events.ClassifiedAdSentForReview { Id = Id });
+            State = ClassifiedAdState.PendingReview;
         }
         protected override void EnsureValidState()
         {
