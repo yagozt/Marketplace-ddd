@@ -7,7 +7,7 @@ namespace Marketplace.Domain
     {
         public static ClassifiedAdText FromString(string text) => new ClassifiedAdText(text);
         public string Value { get; }
-        private ClassifiedAdText(string value) => Value = value;
+        public ClassifiedAdText(string value) => Value = value;
 
         public static implicit operator string(ClassifiedAdText text) => text.Value;
     }

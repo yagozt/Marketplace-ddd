@@ -29,5 +29,21 @@ namespace Marketplace.Domain
         {
             public Guid Id { get; set; }
         }
+
+        public class PictureAddedToAClassifiedAd
+        {
+            public Guid PictureId { get; set; }
+            public Guid ClassifiedAdId { get; set; }
+            public string Url { get; set; }
+            public int Height { get; set; }
+            public int Width { get; set; }
+            public int Order { get; set; }
+        }
+        public class ClassifiedAdPictureResized
+        {
+            public Guid PictureId { get; set; }
+            public int Height { get; set; }
+            public int Width { get; set; }
+        }
     }
 }
