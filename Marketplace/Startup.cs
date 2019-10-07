@@ -1,10 +1,14 @@
 ﻿
 
 using Marketplace.Api;
+using Marketplace.Domain;
+using Marketplace.Framework;
+using Marketplace.Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Raven.Client.Documents;
 using Swashbuckle.AspNetCore.Swagger;
 using static Marketplace.Contracts.ClassifiedAds;
 
@@ -24,10 +28,21 @@ namespace Marketplace
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<IEntityStore, RavenDbEntityStore>();
-            services.AddScoped<IHandleCommand<Contracts.ClassifiedAds.V1.Create>>(c => 
-            new RetryingCommandHandler<V1.Create>(new CreateClassifiedAdHandler(c.GetService<RavenDbEntityStore>())));
-            services.AddSingleton(new ClassifiedAdsApplicationService());
+            var store = new DocumentStore
+            {
+                Urls = new[] { "http://localhost:8080" },
+                Database = "Marketplace",
+                Conventions = {
+    FindIdentityProperty = m => m.Name == "_databaseId"
+}
+            };
+            store.Initialize();
+            services.AddSingleton<ICurrencyLookup, FixedCurrencyLookup>();
+            services.AddScoped(c => store.OpenAsyncSession());
+            services.AddScoped<IUnitOfWork, RavenDbUnitOfWork>();
+            services.AddScoped<IClassifiedAdRepository, ClassifiedAdRepository>();
+            services.AddScoped<ClassifiedAdsApplicationService>();
+
             services.AddMvc(options => options.EnableEndpointRouting = false);
             services.AddSwaggerGen(c => c.SwaggerDoc("v1", new Info
             {

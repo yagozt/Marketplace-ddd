@@ -11,11 +11,12 @@ namespace Marketplace.Api
         {
             _store = store;
         }
-        public Task Handle(Contracts.ClassifiedAds.V1.Create command){
+        public Task Handle(Contracts.ClassifiedAds.V1.Create command)
+        {
             var classifiedAd = new ClassifiedAd(new ClassifiedAdId(command.Id),
                                                 new UserId(command.OwnerId));
-            
-            return _store.Save(classifiedAd);
+
+            return Task.CompletedTask;
         }
     }
 }

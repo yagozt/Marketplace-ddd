@@ -7,7 +7,6 @@ namespace Marketplace.Domain
 {
     public class ClassifiedAd : AggregateRoot<ClassifiedAdId>
     {
-        public ClassifiedAdId Id { get; private set; }
         public ClassifiedAd(ClassifiedAdId id, UserId ownerId)
         {
             Pictures = new List<Picture>();

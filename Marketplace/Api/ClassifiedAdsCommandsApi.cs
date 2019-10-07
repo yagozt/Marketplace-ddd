@@ -1,5 +1,6 @@
 ﻿using Marketplace.Contracts;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,8 +22,7 @@ namespace Marketplace.Api
         [HttpPost]
         public async Task<IActionResult> Post(Contracts.ClassifiedAds.V1.Create request)
         {
-            await _applicationService.Handle(request);
-            return Ok();
+            return await HandleRequest(request, _applicationService.Handle);
         }
         [HttpPut("name")]
         public async Task<IActionResult> Put(Contracts.ClassifiedAds.V1.SetTitle request)
@@ -47,6 +47,20 @@ namespace Marketplace.Api
         {
             await _applicationService.Handle(request);
             return Ok();
+        }
+        private async Task<IActionResult> HandleRequest<T>(T request, Func<T, Task> handler)
+        {
+            try
+            {
+                Log.Debug("Handling HTTP request of type {type}", typeof(T).Name);
+                await handler(request);
+                return Ok();
+            }
+            catch (System.Exception e)
+            {
+                Log.Error("Error handling the request", e);
+                return new BadRequestObjectResult(new { error = e.Message, stackTrace = e.StackTrace });
+            }
         }
     }
 }
